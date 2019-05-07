@@ -1,0 +1,76 @@
+# ++++++++++++++++++++This function will be used to just log the log file entries +++++++
+def write_log_file():
+
+
+
+    log = logging.getLogger('')
+
+    # Add file handler
+    loglist = (logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL)
+    with open('Const/config.json') as i:
+        json_const = json.load(i)
+    default_log = json_const['APP_LOG_LEVEL']
+    loglevel = loglist[default_log]
+
+    log.setLevel(loglevel)
+    format = logging.Formatter('%(asctime)s  %(levelname)-2s [%(filename)s:%(lineno)d]  %(message)s',
+                               datefmt='%d-%b-%Y  %H:%M:%S')
+
+    # # console enable the message
+
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setFormatter(format)
+    log.addHandler(ch)
+
+    fh = handlers.RotatingFileHandler('Log/' + "Applog_" + str(time.strftime('%d-%b-%Y')) + '.log')
+    fh.setFormatter(format)
+    log.addHandler(fh)
+
+# +++++++++++++++++++Log File limitation based on config file+++++++++++++++++++
+
+def remove_soujhe_logs():
+    logging.info("Entered remove_soujhe_logs. ")
+    with open('Const/config.json') as i:          #adding the path of json file
+        json_const = json.load(i)
+        log_delete = json_const['LOG_DAYS']
+
+    removed = 0
+    path = "desired path"
+    # Check current working directory.
+    dir_to_search = os.getcwd()
+
+    if dir_to_search != "/Log/":  # compare current to desired directory
+        # Now change the directory
+        os.chdir('Log/')
+        # Check current working directory.
+        dir_to_search = os.getcwd()
+
+    tifCounter = len(glob.glob1(dir_to_search, "*.log"))
+    logging.info("Number of log files in directory : " + str(tifCounter))
+
+    dataset_path = 'Log/'
+    files = glob.glob(dir_to_search + "*.log")
+
+    if tifCounter > log_delete:
+        for dirpath, dirnames, filenames in os.walk(dir_to_search):
+            filenames.sort(key=os.path.getmtime)
+
+            for file in filenames[-len(filenames):-1]:
+
+                curpath = os.path.join(dirpath, file)
+
+                log_delete = json_const['LOG_DAYS']
+                if len(glob.glob1(dir_to_search, "*.log")) > log_delete:
+
+                    os.remove(curpath)
+                    logging.info("Deleted log file:" + str(file))
+                    removed += 1
+
+    logging.info("Number of log files removed : " + str(removed))
+    
+# ++++++++++++++++++config file+++++++++++++++++++
+# file path  [Const/config.json]
+
+{
+  "LOG_DAYS" : 5
+}
